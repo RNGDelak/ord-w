@@ -1,17 +1,113 @@
-# Transfinite number line to omega
-a template for everyone to create transfinite number line
-it consists control for mobile touch,pc arrows and mouse , so a very good place to start
+# Transfinite Number Line (up to ω)
 
-i recommend you to reading the whole script.js to understand each part,make lite changes to see the different. The code is easy to read btw and if you want to customize it, you should
+A template for building your own **transfinite number line visualizer**.
 
-if you don't read the script.js, thats ok but please remember these notes
-+) dont change the any premades function name without chaning it globally
+Supports:
 
-# What you need
+* Mobile (touch controls)
+* PC (keyboard + mouse)
+* Deep zoom exploration
 
-+) you must have a function that convert real number into your ordinal notation
--) it should be complete, mean all the ordinal up to your ordinal limt must have a real number represent it
--) it must be using decimal.js
+This is a **starting framework** — you are expected to customize and extend it.
 
-+) you should have a ordinal classifier for visual
-+) you also have a ordinal priority function, which conver real/ordinal into priority number so that important ordinal should be displayed and unimportant is hidden
+---
+
+## Before You Start
+
+It is **strongly recommended** to read through `script.js`.
+
+The code is intentionally written to be:
+
+* Easy to follow
+* Easy to modify
+* Modular enough for experimentation
+
+Try making small changes and observe what happens — that’s the fastest way to understand the system.
+
+---
+
+## Important Notes
+
+* Do **NOT rename existing functions** unless you update them everywhere
+* Many parts of the system depend on consistent naming
+* Small mistakes can silently break the visualization
+
+---
+
+## What You Need to Implement
+
+To create your own ordinal system, you must provide:
+
+---
+
+### 1. Real → Ordinal Function
+
+A function that converts a real number into your ordinal notation.
+
+Requirements:
+
+* Must cover **all ordinals up to your chosen limit**
+* Must be **continuous enough** for visualization
+* Must use `decimal.js` (required for precision)
+
+This is the hardest part
+
+---
+
+### 2. Ordinal Classifier
+
+A function that classifies ordinals for visualization.
+
+Examples:
+
+* Zero
+* Successor ordinals
+* Limit ordinals
+* Powers of ω
+* ε ordinals
+* Higher systems (optional)
+
+This is used for:
+
+* Coloring
+* Labeling
+* Visual structure
+
+---
+
+### 3. Priority Function
+
+A function that assigns a **priority value** to each ordinal.
+
+Purpose:
+
+* Important ordinals are shown
+* Less important ones are hidden at deep zoom
+
+Without this, the screen will become cluttered or slow.
+
+---
+
+## Goal
+
+This template helps you:
+
+* Build your own ordinal notation system
+* Visualize transfinite structures
+* Experiment with advanced ordinal hierarchies
+
+---
+
+## Tips
+
+* Start small (e.g. up to ω or ε₀)
+* Expand step by step
+* Don’t try to implement everything at once
+
+---
+
+## Final Note
+
+This is not just a visualizer — it’s a sandbox for exploring transfinite math.
+
+Break things, experiment, and push the limits.
