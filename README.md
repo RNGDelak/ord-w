@@ -1,4 +1,4 @@
-# Transfinite Number Line (up to ω) <Using Decimal.js>
+# Transfinite Number Line (up to ω) [Using Decimal.js]
 
 A template for building your own **transfinite number line visualizer**.
 
