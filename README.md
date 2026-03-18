@@ -105,10 +105,14 @@ This template helps you:
 * Don’t try to implement everything at once
 
 # How i make transfinite number lines goes up to lim(BMS)
-Good idea for Y, and further 
+Good idea for Y, and further
+ 
 Take number n
+
 Convert to nth capital ordinal of your ordinal system 
+
 What is capital ordinal?
+
 + if your lim is w^w, your capital are 1,w,w^2,w^3,w^4,…
 + if your lim is lim(bms), your capital ordinal are (0),(0)(1,1)(0)(1,1,1),(0)(1,1,1,1),…
 + if your lim is lim(Y), your capital ordinal is (1),(1,2),(1,3)(1,4),…
@@ -116,6 +120,7 @@ What is capital ordinal?
 
 Next binary expansion n
 (0,0,0,0,1,0,1,0,1,…) for example 
+
 We expan the nth capital at index with number 1
 
 After that process, we get the new ordinal with these properties 
