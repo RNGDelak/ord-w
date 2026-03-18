@@ -117,6 +117,7 @@ What is capital ordinal?
 Next binary expansion n
 (0,0,0,0,1,0,1,0,1,…) for example 
 We expan the nth capital at index with number 1
+
 After that process, we get the new ordinal with these properties 
 + completeness
 + monotonous
