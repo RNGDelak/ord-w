@@ -104,6 +104,31 @@ This template helps you:
 * Expand step by step
 * Don’t try to implement everything at once
 
+# How i make transfinite number lines goes up to lim(BMS)
+Good idea for Y, and further 
+Take number n
+Convert to nth capital ordinal of your ordinal system 
+What is capital ordinal?
++ if your lim is w^w, your capital are 1,w,w^2,w^3,w^4,…
++ if your lim is lim(bms), your capital ordinal are (0),(0)(1,1)(0)(1,1,1),(0)(1,1,1,1),…
++ if your lim is lim(Y), your capital ordinal is (1),(1,2),(1,3)(1,4),…
++…etc basically capital ordinal are the ordinal that only appear omega times until the limit
+
+Next binary expansion n
+(0,0,0,0,1,0,1,0,1,…) for example 
+We expan the nth capital at index with number 1
+After that process, we get the new ordinal with these properties 
++ completeness
++ monotonous
++ uniqueness 
+
+Compress R+ into [0;1) via x = 1-(2/3)^x
+well to use this precision must be scaled by log2 of zoom, to preserve the binary expansion is fit to decimal
+
+This is the medthod used for this number line 
+There way tons of medthod but this is seems effective
+
+
 ---
 
 ## Final Note
@@ -111,3 +136,5 @@ This template helps you:
 This is not just a visualizer — it’s a sandbox for exploring transfinite math.
 
 Break things, experiment, and push the limits.
+
+Good luck, i'm looking forward yours number line!
