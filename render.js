@@ -250,7 +250,7 @@ function renderPreview() {
     const worldLeft = screenToWorld(0);
     const worldRight = screenToWorld(canvas.width);
 
-    const start = Decimal.max(new Decimal(1), worldLeft);
+    const start = worldLeft
     const end = worldRight;
 
     if (end.lte(start)) return;
@@ -313,7 +313,7 @@ function startRender() {
     const worldLeft = screenToWorld(0);
     const worldRight = screenToWorld(canvas.width);
 
-    const start = Decimal.max(new Decimal(1), worldLeft);
+    const start = worldLeft
     const end = worldRight;
 
     if (end.lte(start)) return;
