@@ -5,7 +5,7 @@ function encode(x) {
   const ONE = new Decimal(1);
   const THREE = new Decimal(3);
   const BASE = new Decimal(2).div(3);
-  const LN_BASE = BASE.ln(); // cache this once
+  const LN_BASE = BASE.ln();
 
   x = new Decimal(x);
 
@@ -14,21 +14,16 @@ function encode(x) {
 
     const oneMinusX = ONE.minus(x);
 
-    // ai = floor(log_{2/3}(1 - x))
-    const aiDec = oneMinusX.ln().div(LN_BASE).floor();
-    const ai = aiDec.toNumber(); // keep JS number for speed
-    result.push(ai);
+    // ai as Decimal
+    const ai = oneMinusX.ln().div(LN_BASE).floor();
+    result.push(ai); // keep as Decimal
 
-    // compute power ONCE
+    // use Decimal exponent
     const basePow = BASE.pow(ai);
 
-    // left = 1 - base^ai
     const left = ONE.minus(basePow);
-
-    // denom = base^ai / 3
     const denom = basePow.div(THREE);
 
-    // rescale
     x = x.minus(left).div(denom);
   }
 
