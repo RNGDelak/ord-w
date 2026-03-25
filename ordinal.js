@@ -19,7 +19,7 @@ function getordinal(xInput) {
         .floor();
 
     // coefficient form
-    return [value.sub(new Decimal(1))]; //i intentionally subtracting 1 so that the number zero exist
+    return [value];
 }
 function toOrdinalfine(coeff) {
     let parts = [];
