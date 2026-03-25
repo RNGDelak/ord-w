@@ -425,7 +425,7 @@ lastTime = now;
     let centerWorld = screenToWorld(canvas.width / 2);
     document.getElementById("worldDisplay").textContent =
 centerWorld.toPrecision(3)
-    const safeCenter = Decimal.max(new Decimal(1), centerWorld);
+    const safeCenter = centerWorld
 
     document.getElementById("ord").innerHTML =
 toOrdinalfine(getordinal(safeCenter));
