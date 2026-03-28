@@ -29,3 +29,23 @@ function encode(x) {
 
   return result;
 }
+
+function decode(arr) {
+  const ONE = new Decimal(1);
+  const THREE = new Decimal(3);
+  const BASE = new Decimal(2).div(3);
+
+  let x = new Decimal(0); // start from innermost
+
+  for (let i = arr.length - 1; i >= 0; i--) {
+    const ai = new Decimal(arr[i]);
+
+    const basePow = BASE.pow(ai);
+    const left = ONE.minus(basePow);
+    const denom = basePow.div(THREE);
+
+    x = x.mul(denom).plus(left);
+  }
+
+  return x;
+}
