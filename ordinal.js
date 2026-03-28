@@ -2,86 +2,118 @@
 // ORDINAL ENGINE
 // =====================
 
+// ---- Constants ----
+const BASE = new Decimal(2).div(3);
+const LN_BASE = BASE.ln();
+const ZERO = new Decimal(0);
+const ONE = new Decimal(1);
+const THREE = new Decimal(3);
 
-function getordinal(xInput) {
 
-    let x = new Decimal(xInput);
+// =====================
+// Core: Extract ordinal coefficient
+// =====================
+function getOrdinal(xInput) {
+  const x = new Decimal(xInput);
 
-    // outside domain
-    if (x.lt(0) || x.gte(3)) return [new Decimal(0),new Decimal(1)];
+  // Outside valid domain [0, 3)
+  if (x.lt(0) || x.gte(3)) {
+    return [ZERO, ONE];
+  }
 
-    const base = new Decimal(2).div(3);
+  const value = ONE
+    .minus(x.div(THREE))
+    .ln()
+    .div(LN_BASE)
+    .floor();
 
-    const value = new Decimal(1)
-        .minus(x.div(3))
-        .ln()
-        .div(base.ln())
-        .floor();
-
-    // coefficient form
-    return [value];
-}
-function toOrdinalfine(coeff) {
-    let parts = [];
-
-    for (let i = coeff.length - 1; i >= 0; i--) {
-const k = parseInt(coeff[i]);
-
-if (k !== 0) {
-    if (i === 0) {
-parts.push(k.toString());
-    }
-    else if (i === 1) {
-parts.push(k === 1 ? "ω" : k + "ω");
-    }
-    else {
-parts.push(
-    k === 1
-? "ω<sup>" + i + "</sup>"
-: k + "ω<sup>" + i + "</sup>"
-);
-    }
-}
-    }
-
-    return parts.length ? parts.join(" + ") : "0";
+  return [value];
 }
 
-function toOrdinal(coeff) {
-    let parts = [];
-    for (let i = coeff.length - 1; i >= 0; i--) {
-const k = coeff[i];
-if (!k.eq(0)) {
-    if (i === 0) parts.push(k.toString());
-    else if (i === 1) parts.push(k.eq(1) ? "ω" : k + "ω");
-    else parts.push(k.eq(1) ? "ω^" + i : k + "ω^" + i);
+
+// =====================
+// Formatting helpers
+// =====================
+
+// HTML version (uses <sup>)
+function toOrdinalHTML(coeffs) {
+  const parts = [];
+
+  for (let i = coeffs.length - 1; i >= 0; i--) {
+    const k = parseInt(coeffs[i]);
+    if (k === 0) continue;
+
+    parts.push(formatTermHTML(k, i));
+  }
+
+  return parts.length ? parts.join(" + ") : "0";
 }
-    }
-    return parts.length ? parts.join(" + ") : "0";
+
+
+// Plain text version (uses ^)
+function toOrdinalText(coeffs) {
+  const parts = [];
+
+  for (let i = coeffs.length - 1; i >= 0; i--) {
+    const k = coeffs[i];
+    if (k.eq(0)) continue;
+
+    parts.push(formatTermText(k, i));
+  }
+
+  return parts.length ? parts.join(" + ") : "0";
 }
 
-function classifyOrdinal(coeff) {
-    let nonZeroCount = 0;
-    let nonZeroIndex = -1;
 
-    for (let i = 0; i < coeff.length; i++) {
-        if (!coeff[i].eq(0)) {
-            nonZeroCount++;
-            nonZeroIndex = i;
-        }
+// =====================
+// Term formatting
+// =====================
+
+function formatTermHTML(k, power) {
+  if (power === 0) return k.toString();
+
+  if (power === 1) {
+    return k === 1 ? "ω" : `${k}ω`;
+  }
+
+  return k === 1
+    ? `ω<sup>${power}</sup>`
+    : `${k}ω<sup>${power}</sup>`;
+}
+
+
+function formatTermText(k, power) {
+  if (power === 0) return k.toString();
+
+  if (power === 1) {
+    return k.eq(1) ? "ω" : `${k}ω`;
+  }
+
+  return k.eq(1)
+    ? `ω^${power}`
+    : `${k}ω^${power}`;
+}
+
+
+// =====================
+// Classification
+// =====================
+
+function classifyOrdinal(coeffs) {
+  let nonZeroCount = 0;
+  let lastNonZeroIndex = -1;
+
+  for (let i = 0; i < coeffs.length; i++) {
+    if (!coeffs[i].eq(0)) {
+      nonZeroCount++;
+      lastNonZeroIndex = i;
     }
+  }
 
-    let color;
+  // ---- Classification rules ----
+  if (nonZeroCount === 0) return "cyan"; // zero
+  if (nonZeroCount === 1 && lastNonZeroIndex !== 0) return "yellow"; // pure ω^k
+  if (!coeffs[0].eq(0)) return "white"; // has constant term
 
-    if (nonZeroCount === 0) {
-        color = "cyan"; // zero ordinal
-    } else if (nonZeroCount === 1 && nonZeroIndex !== 0) {
-        color = "yellow"; // pure omega power
-    } else if (!coeff[0].eq(0)) {
-        color = "white"; // has constant term
-    } else {
-        color = "orange"; // general ordinal without constant
-    }
-
-    return color;
+  return "orange"; // general case
 }
