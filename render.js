@@ -344,18 +344,8 @@ function drawCenterMarker() {
 // PRECISION CONTROL
 // =====================
 function autoPrecision() {
-  if (!zoom || zoom.lte(0)) return;
-
-  const zoomMag = zoom.log(10);
-  const center = screenToWorld(canvas.width / 2);
-
-  if (!center || center.isZero()) return;
-
-  const worldMag = center.abs().log(10);
-
-  const precision = zoomMag.plus(worldMag).plus(7).floor().toNumber();
+  const precision = zoom.log(10).plus(7).floor().toNumber();
   const clamped = Math.max(7, Math.min(precision, 1e6));
-
   Decimal.set({ precision: clamped });
 }
 
@@ -384,7 +374,7 @@ function loop() {
   const center = screenToWorld(canvas.width / 2);
 
   document.getElementById("worldDisplay").textContent =
-    center.toPrecision(3);
+    center.toPrecision(Decimal.precision);
 
   document.getElementById("ord").innerHTML =
     toOrdinalfine(getordinal(center));
