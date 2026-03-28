@@ -36,7 +36,7 @@ function getOrdinal(xInput) {
 // =====================
 
 // HTML version (uses <sup>)
-function toOrdinalHTML(coeffs) {
+function toOrdinalfine(coeffs) {
   const parts = [];
 
   for (let i = coeffs.length - 1; i >= 0; i--) {
@@ -51,7 +51,7 @@ function toOrdinalHTML(coeffs) {
 
 
 // Plain text version (uses ^)
-function toOrdinalText(coeffs) {
+function toOrdinal(coeffs) {
   const parts = [];
 
   for (let i = coeffs.length - 1; i >= 0; i--) {
