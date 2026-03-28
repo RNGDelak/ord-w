@@ -13,7 +13,7 @@ const THREE = new Decimal(3);
 // =====================
 // Core: Extract ordinal coefficient
 // =====================
-function getOrdinal(xInput) {
+function getordinal(xInput) {
   const x = new Decimal(xInput);
 
   // Outside valid domain [0, 3)
