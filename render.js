@@ -1,441 +1,399 @@
+// =====================
+// CANVAS SETUP
+// =====================
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
-window.addEventListener("resize", resize);
-resize();
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
 
 // =====================
 // STATE
 // =====================
-let zoom = new Decimal(215.045); 
-let offsetX = new Decimal(-1.99); //preset used for the thumbnails
+let zoom = new Decimal(215.045);
+let offsetX = new Decimal(-1.99);
 
 let isInteracting = false;
 let renderVersion = 0;
 let idleTimeout = null;
 
+
 // =====================
-// COORDINATES
+// COORDINATE SYSTEM
 // =====================
 function worldToScreen(x) {
-    return x.plus(offsetX)
-.times(zoom)
-.plus(canvas.width / 2)
-.toNumber();
+  return x.plus(offsetX).times(zoom).plus(canvas.width / 2).toNumber();
 }
 
 function screenToWorld(x) {
-    return new Decimal(x)
-.minus(canvas.width / 2)
-.div(zoom)
-.minus(offsetX);
+  return new Decimal(x)
+    .minus(canvas.width / 2)
+    .div(zoom)
+    .minus(offsetX);
 }
+
 
 // =====================
 // INTERACTION CONTROL
 // =====================
 function startInteraction() {
-    isInteracting = true;
-    renderVersion++;
-    if (idleTimeout) clearTimeout(idleTimeout);
+  isInteracting = true;
+  renderVersion++;
+  if (idleTimeout) clearTimeout(idleTimeout);
 }
 
 function endInteraction() {
-    isInteracting = false;
-
-    idleTimeout = setTimeout(() => {
-startRender();
-    }, 120);
+  isInteracting = false;
+  idleTimeout = setTimeout(startRender, 120);
 }
 
+
 // =====================
-// MOUSE
+// ZOOM HELPERS (reused everywhere)
+// =====================
+function applyZoom(zoomFactor) {
+  const centerScreen = new Decimal(canvas.width / 2);
+  const centerWorld = screenToWorld(centerScreen);
+
+  zoom = zoom.times(zoomFactor);
+  if (zoom.lte(0)) zoom = new Decimal(1);
+
+  // keep center stable
+  offsetX = offsetX.plus(centerWorld.minus(screenToWorld(centerScreen)));
+}
+
+
+// =====================
+// MOUSE INPUT
 // =====================
 let mouseDown = false;
 let lastX = 0;
 let lastY = 0;
 
 canvas.addEventListener("mousedown", e => {
-    mouseDown = true;
-    lastX = e.clientX;
-    lastY = e.clientY;
-    startInteraction();
+  mouseDown = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  startInteraction();
 });
 
 window.addEventListener("mouseup", () => {
-    if (mouseDown) {
-mouseDown = false;
-endInteraction();
-    }
+  if (!mouseDown) return;
+  mouseDown = false;
+  endInteraction();
 });
 
 window.addEventListener("mousemove", e => {
-    if (!mouseDown) return;
+  if (!mouseDown) return;
 
-    const dx = new Decimal(e.clientX - lastX);
-    const dy = new Decimal(e.clientY - lastY);
+  const dx = new Decimal(e.clientX - lastX);
+  const dy = new Decimal(e.clientY - lastY);
 
-    lastX = e.clientX;
-    lastY = e.clientY;
+  lastX = e.clientX;
+  lastY = e.clientY;
 
-    offsetX = offsetX.plus(dx.div(zoom));
+  // pan
+  offsetX = offsetX.plus(dx.div(zoom));
 
-    const zoomFactor = new Decimal(1).plus(dy.neg().times(0.005));
-    const centerScreen = new Decimal(canvas.width / 2);
-    const centerWorld = screenToWorld(centerScreen);
-
-    zoom = zoom.times(zoomFactor);
-    if (zoom.lte(0)) zoom = new Decimal(1);
-
-    offsetX = offsetX.plus(centerWorld.minus(screenToWorld(centerScreen)));
+  // zoom
+  const zoomFactor = new Decimal(1).plus(dy.neg().times(0.005));
+  applyZoom(zoomFactor);
 });
 
-// =====================
-// TOUCH SUPPORT
-// =====================
 
+// =====================
+// TOUCH INPUT (same logic as mouse)
+// =====================
 let touchActive = false;
 
 canvas.addEventListener("touchstart", e => {
-    if (e.touches.length !== 1) return;
+  if (e.touches.length !== 1) return;
 
-    e.preventDefault();
+  e.preventDefault();
+  const t = e.touches[0];
 
-    const touch = e.touches[0];
+  touchActive = true;
+  lastX = t.clientX;
+  lastY = t.clientY;
 
-    touchActive = true;
-    lastX = touch.clientX;
-    lastY = touch.clientY;
-
-    startInteraction();
-}, {passive: false});
+  startInteraction();
+}, { passive: false });
 
 canvas.addEventListener("touchmove", e => {
-    if (!touchActive || e.touches.length !== 1) return;
+  if (!touchActive || e.touches.length !== 1) return;
 
-    e.preventDefault();
+  e.preventDefault();
+  const t = e.touches[0];
 
-    const touch = e.touches[0];
+  const dx = new Decimal(t.clientX - lastX);
+  const dy = new Decimal(t.clientY - lastY);
 
-    const dx = new Decimal(touch.clientX - lastX);
-    const dy = new Decimal(touch.clientY - lastY);
+  lastX = t.clientX;
+  lastY = t.clientY;
 
-    lastX = touch.clientX;
-    lastY = touch.clientY;
+  offsetX = offsetX.plus(dx.div(zoom));
 
-    // Horizontal pan (same as mouse)
-    offsetX = offsetX.plus(dx.div(zoom));
+  const zoomFactor = new Decimal(1).plus(dy.neg().times(0.005));
+  applyZoom(zoomFactor);
 
-    // Vertical drag = zoom
-    const zoomFactor = new Decimal(1).plus(dy.neg().times(0.005));
+}, { passive: false });
 
-    const centerScreen = new Decimal(canvas.width / 2);
-    const centerWorld = screenToWorld(centerScreen);
-
-    zoom = zoom.times(zoomFactor);
-    if (zoom.lte(0)) zoom = new Decimal(1);
-
-    offsetX = offsetX.plus(
-centerWorld.minus(screenToWorld(centerScreen))
-    );
-
-}, {passive: false});
-
-canvas.addEventListener("touchend", e => {
-    if (!touchActive) return;
-
-    touchActive = false;
-    endInteraction();
+canvas.addEventListener("touchend", () => {
+  if (!touchActive) return;
+  touchActive = false;
+  endInteraction();
 });
 
-canvas.addEventListener("touchcancel", () => {
-    touchActive = false;
-    endInteraction();
-});
+canvas.addEventListener("touchcancel", endInteraction);
+
 
 // =====================
-// KEYBOARD SUPPORT
+// KEYBOARD INPUT
 // =====================
-
-let keys = {
-    ArrowUp: false,
-    ArrowDown: false,
-    ArrowLeft: false,
-    ArrowRight: false
+const keys = {
+  ArrowUp: false,
+  ArrowDown: false,
+  ArrowLeft: false,
+  ArrowRight: false
 };
 
 let keyboardAnimating = false;
 
 function startKeyboardLoop() {
-    if (keyboardAnimating) return;
-    keyboardAnimating = true;
-    startInteraction();
-    requestAnimationFrame(keyboardStep);
+  if (keyboardAnimating) return;
+  keyboardAnimating = true;
+  startInteraction();
+  requestAnimationFrame(keyboardStep);
 }
 
 function stopKeyboardLoop() {
-    keyboardAnimating = false;
-    endInteraction();
+  keyboardAnimating = false;
+  endInteraction();
 }
 
 function keyboardStep() {
-    if (!keyboardAnimating) return;
+  if (!keyboardAnimating) return;
 
-    const panSpeed = new Decimal(50).div(zoom); // pan speed scales with zoom
-    const zoomSpeed = new Decimal(0.05);// smooth zoom rate
+  const panSpeed = new Decimal(50).div(zoom);
+  const zoomSpeed = new Decimal(0.05);
 
-    // PAN
-    if (keys.ArrowLeft) {
-offsetX = offsetX.plus(panSpeed);
-    }
-    if (keys.ArrowRight) {
-offsetX = offsetX.minus(panSpeed);
-    }
+  if (keys.ArrowLeft) offsetX = offsetX.plus(panSpeed);
+  if (keys.ArrowRight) offsetX = offsetX.minus(panSpeed);
 
-    // ZOOM
-    if (keys.ArrowUp || keys.ArrowDown) {
+  if (keys.ArrowUp || keys.ArrowDown) {
+    const dir = keys.ArrowUp ? 1 : -1;
+    const zoomFactor = new Decimal(1).plus(zoomSpeed.times(dir));
+    applyZoom(zoomFactor);
+  }
 
-const direction = keys.ArrowUp ? 1 : -1;
-const zoomFactor = new Decimal(1).plus(zoomSpeed.times(direction));
-
-const centerScreen = new Decimal(canvas.width / 2);
-const centerWorld = screenToWorld(centerScreen);
-
-zoom = zoom.times(zoomFactor);
-if (zoom.lte(0)) zoom = new Decimal(1);
-
-offsetX = offsetX.plus(
-    centerWorld.minus(screenToWorld(centerScreen))
-);
-    }
-
-    requestAnimationFrame(keyboardStep);
+  requestAnimationFrame(keyboardStep);
 }
 
 window.addEventListener("keydown", e => {
-    if (keys.hasOwnProperty(e.key)) {
-if (!keys[e.key]) {
+  if (!(e.key in keys)) return;
+
+  if (!keys[e.key]) {
     keys[e.key] = true;
     startKeyboardLoop();
-}
-e.preventDefault();
-    }
+  }
+  e.preventDefault();
 });
 
 window.addEventListener("keyup", e => {
-    if (keys.hasOwnProperty(e.key)) {
-keys[e.key] = false;
+  if (!(e.key in keys)) return;
 
-// stop only if all released
-if (!keys.ArrowUp && !keys.ArrowDown &&
-    !keys.ArrowLeft && !keys.ArrowRight) {
+  keys[e.key] = false;
+
+  if (!Object.values(keys).some(v => v)) {
     stopKeyboardLoop();
-}
+  }
 
-e.preventDefault();
-    }
+  e.preventDefault();
 });
 
+
 // =====================
-// PREVIEW RENDER (50 STEPS)
+// RENDER HELPERS
+// =====================
+function shouldDrawLabel(sum) {
+  const base = new Decimal(3).div(2);
+  const threshold = base.pow(sum).mul(5);
+
+  return threshold.lt(Decimal.max(new Decimal(25), zoom));
+}
+
+
+// =====================
+// PREVIEW RENDER
 // =====================
 function renderPreview() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawCenterMarker();
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    marker();
-    const worldLeft = screenToWorld(0);
-    const worldRight = screenToWorld(canvas.width);
+  const start = screenToWorld(0);
+  const end = screenToWorld(canvas.width);
+  if (end.lte(start)) return;
 
-    const start = worldLeft
-    const end = worldRight;
+  const steps = 50;
+  let lastOrdinal = null;
 
-    if (end.lte(start)) return;
+  for (let i = 0; i <= steps; i++) {
+    const ratio = new Decimal(i).div(steps);
+    const x = start.plus(end.minus(start).mul(ratio));
+    const ord = getordinal(x);
 
-    const steps = 50;
-    let lastOrdinal = null;
+    if (JSON.stringify(ord) === JSON.stringify(lastOrdinal)) continue;
 
-    for (let step = 0; step <= steps; step++) {
-
-const ratio = new Decimal(step).div(steps);
-const x = start.plus(end.minus(start).mul(ratio));
-const ordinal = getordinal(x);
-
-if (!(JSON.stringify(lastOrdinal) == JSON.stringify(ordinal))) {
-
-    const pos = x;
-    const sx = worldToScreen(pos);
-
+    const sx = worldToScreen(x);
     if (sx > -50 && sx < canvas.width + 50) {
-drawOrdinalTick(ordinal, sx, zoom);
+      drawOrdinalTick(ord, sx);
     }
 
-    lastOrdinal = ordinal;
+    lastOrdinal = ord;
+  }
 }
-    }
-}
 
-function autoPrecision() {
-    // Guard against invalid zoom
-    if (!zoom || zoom.lte(0)) return;
-
-    const zoomMag = zoom.log(10);
-
-    const centerWorld = screenToWorld(canvas.width / 2);
-    if (!centerWorld || centerWorld.isZero()) return;
-
-    const worldMag = centerWorld.abs().log(10);
-
-    // Calculate precision
-    const newPrecision = zoomMag
-.plus(worldMag)
-.plus(7)
-.floor()
-.toNumber();
-
-    // Clamp to sane bounds (Decimal.js practical limits)
-    const clamped = Math.max(7, Math.min(newPrecision, 1e6));
-
-    Decimal.set({ precision: clamped });
-}
 
 // =====================
-// FULL RENDER
+// FULL RENDER (chunked)
 // =====================
 function startRender() {
-    renderVersion++;
-    const currentVersion = renderVersion;
+  renderVersion++;
+  const version = renderVersion;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const worldLeft = screenToWorld(0);
-    const worldRight = screenToWorld(canvas.width);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const start = worldLeft
-    const end = worldRight;
+  const start = screenToWorld(0);
+  const end = screenToWorld(canvas.width);
+  if (end.lte(start)) return;
 
-    if (end.lte(start)) return;
+  const totalSteps = Math.floor(canvas.width);
+  let step = 0;
+  let lastOrdinal = null;
 
-    const totalSteps = Math.floor(canvas.width);
-    let step = 0;
-    let lastOrdinal = null;
+  function processChunk() {
+    if (version !== renderVersion || isInteracting) return;
 
-    function processChunk() {
+    const chunkSize = Math.floor(totalSteps / 25);
 
-if (currentVersion !== renderVersion) return;
-if (isInteracting) return;
+    for (let i = 0; i < chunkSize && step <= totalSteps; i++, step++) {
+      const ratio = new Decimal(step).div(totalSteps);
+      const x = start.plus(end.minus(start).mul(ratio));
+      const ord = getordinal(x);
 
-const chunkSize = Math.floor(totalSteps / 25);
+      if (JSON.stringify(ord) === JSON.stringify(lastOrdinal)) continue;
 
-for (let i = 0; i < chunkSize && step <= totalSteps; i++, step++) {
+      const sx = worldToScreen(x);
+      if (sx > -50 && sx < canvas.width + 50) {
+        drawOrdinalTick(ord, sx);
+      }
 
-    const ratio = new Decimal(step).div(totalSteps);
-    const x = start.plus(end.minus(start).mul(ratio));
-    const ordinal = getordinal(x);
-
-    if (!(JSON.stringify(lastOrdinal) == JSON.stringify(ordinal))) {
-
-const pos = x
-const sx = worldToScreen(pos);
-
-if (sx > -50 && sx < canvas.width + 50) {
-    drawOrdinalTick(ordinal, sx, zoom);
-}
-
-lastOrdinal = ordinal;
-    }
-}
-
-if (step <= totalSteps) {
-    requestAnimationFrame(processChunk);
-}
+      lastOrdinal = ord;
     }
 
-    processChunk();
-}
-
-
-function drawOrdinalTick(ord, sx, zoom) {
-
-    const color = classifyOrdinal(ord);
-
-    const midY = (canvas.height / canvas.width) * sx;
-
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-
-    // Always draw tick
-    ctx.beginPath();
-    ctx.moveTo(sx, midY - 15);
-    ctx.lineTo(sx, midY + 15);
-    ctx.stroke();
-
-    // ---- SUM LOOP ----
-    let sum = new Decimal(0);
-    for (let i = 0; i < ord.length; i++) {
-sum = sum.plus(ord[i]);
+    if (step <= totalSteps) {
+      requestAnimationFrame(processChunk);
     }
-    
+  }
 
-    const base = new Decimal(3).div(2);   // 3/2
-    const C = new Decimal(5);     // scaling constant
-
-    const threshold = base.pow(sum).mul(C);
-
-    if (threshold.lt(Decimal.max(new Decimal(25), zoom))) {
-ctx.font = "20px serif";
-ctx.fillText(toOrdinal(ord), sx, midY - 23);
-    }
+  processChunk();
 }
 
-function marker() {
 
-    // Set stroke color (green)
-    ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
-    ctx.lineWidth = 2;
+// =====================
+// DRAWING
+// =====================
+function drawOrdinalTick(ord, sx) {
+  const color = classifyOrdinal(ord);
+  const y = (canvas.height / canvas.width) * sx;
 
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
-    ctx.stroke();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+
+  ctx.beginPath();
+  ctx.moveTo(sx, y - 15);
+  ctx.lineTo(sx, y + 15);
+  ctx.stroke();
+
+  let sum = new Decimal(0);
+  for (const v of ord) sum = sum.plus(v);
+
+  if (shouldDrawLabel(sum)) {
+    ctx.font = "20px serif";
+    ctx.fillText(toOrdinal(ord), sx, y - 23);
+  }
 }
 
+function drawCenterMarker() {
+  ctx.strokeStyle = "rgba(0,0,255,0.5)";
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.moveTo(canvas.width / 2, 0);
+  ctx.lineTo(canvas.width / 2, canvas.height);
+  ctx.stroke();
+}
+
+
+// =====================
+// PRECISION CONTROL
+// =====================
+function autoPrecision() {
+  if (!zoom || zoom.lte(0)) return;
+
+  const zoomMag = zoom.log(10);
+  const center = screenToWorld(canvas.width / 2);
+
+  if (!center || center.isZero()) return;
+
+  const worldMag = center.abs().log(10);
+
+  const precision = zoomMag.plus(worldMag).plus(7).floor().toNumber();
+  const clamped = Math.max(7, Math.min(precision, 1e6));
+
+  Decimal.set({ precision: clamped });
+}
 
 
 // =====================
 // MAIN LOOP
 // =====================
-let fps = 0, lastTime = performance.now(), frames = 0;
+let fps = 0, frames = 0, lastTime = performance.now();
 
 function loop() {
-    autoPrecision();
-    frames++;
-    const now = performance.now();
-    if (now - lastTime >= 1000) {
-fps = frames;
-frames = 0;
-lastTime = now;
-    }
+  autoPrecision();
 
-    document.getElementById("zoomDisplay").textContent = zoom.toPrecision(6);
-    document.getElementById("fpsDisplay").textContent = fps;
+  // FPS counter
+  frames++;
+  const now = performance.now();
+  if (now - lastTime >= 1000) {
+    fps = frames;
+    frames = 0;
+    lastTime = now;
+  }
 
-    let centerWorld = screenToWorld(canvas.width / 2);
-    document.getElementById("worldDisplay").textContent =
-centerWorld.toPrecision(3)
-    const safeCenter = centerWorld
+  // UI updates
+  document.getElementById("zoomDisplay").textContent = zoom.toPrecision(6);
+  document.getElementById("fpsDisplay").textContent = fps;
 
-    document.getElementById("ord").innerHTML =
-toOrdinalfine(getordinal(safeCenter));
+  const center = screenToWorld(canvas.width / 2);
 
+  document.getElementById("worldDisplay").textContent =
+    center.toPrecision(3);
 
-    if (isInteracting) {
-renderPreview(); // clears every frame while dragging
-    }
+  document.getElementById("ord").innerHTML =
+    toOrdinalfine(getordinal(center));
 
-    requestAnimationFrame(loop);
+  if (isInteracting) {
+    renderPreview();
+  }
+
+  requestAnimationFrame(loop);
 }
 
 loop();
