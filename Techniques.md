@@ -144,7 +144,7 @@ an = floor(x / (1 - x)) (iterative)
 
 ---
 
-# 🚀 Features
+# Features
 
 - Works with **any ordinal system**
 - Requires only:
@@ -160,8 +160,7 @@ an = floor(x / (1 - x)) (iterative)
 
 # 📂 Implementation
 
-See:
-
+See: ord-wwfsoe
 ord-wwfsoe
 
 Current implementation supports:
