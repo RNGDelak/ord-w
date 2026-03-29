@@ -1,3 +1,9 @@
+/*
+these function help encode and decode reals into array of number and vice versa
+can use element the array to choose brach index or something if you have different system
+read techniques.md for more details
+*/
+
 //encode numbers into heuristic "folder" system. most input result in infinite expansion, never mind
 function encode(x) {
   const result = [];
