@@ -10,10 +10,14 @@ Fundamental Sequence : https://en.wikipedia.org/wiki/Fundamental_sequence_(set_t
 
 This techniques work samelessly on all system of ordinals, if you provide a consistent ordinal fundamental sequence and ordinal comparator.
 
-we convert number into brach index , then use FS to reduce the fixed ordinal (like w,e0,gamma0,BHO, Lim(BMS),...) into smaller ordinal with 2 rules
+we convert number into brach index , then use FS to reduce the fixed ordinal (like w,e0,gamma0,BHO, Lim(BMS),...) into smaller ordinal with 2 rule
+
 + the ordinal expansion formular for n = [a0,a1,a2,a3,...] : {fixed ordinal}[a0][a1][a2][a3]... or (FS(FS(FS(FS(fixed ordinal)[a0])[a1])[a2])[a3])... in full term
-++ if the ordinal is expanded from fixed ordinal, no checking (eg : expand directly from e0 to 1)
-++ else , let a = FS(b)[k]. we only accept FS(a)[i] if FS(a)[i] > FS(b)[k-1] (case k=0 have been rejected further by that definition, or it is a successor so it is unexpanable)
+
+- if the ordinal is expanded from fixed ordinal, no checking (eg : expand directly from e0 to 1)
+
+- else , let a = FS(b)[k]. we only expan FS(a)[i] if FS(a)[i] > FS(b)[k-1] (case k=0 have been rejected further by that definition, or it is a successor so it is unexpanable)
+
 + for more details , see my code in file ordinal.js working with fixed ordinal w^w
 
 ## number to array encode and decoder
