@@ -263,45 +263,65 @@ function renderPreview() {
 // FULL RENDER (chunked)
 // =====================
 function startRender() {
-  renderVersion++;
-  const version = renderVersion;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    renderVersion++;
+    const currentVersion = renderVersion;
 
-  const start = screenToWorld(0);
-  const end = screenToWorld(canvas.width);
-  if (end.lte(start)) return;
+    const renderStart = performance.now(); // start timer
 
-  const totalSteps = Math.floor(canvas.width);
-  let step = 0;
-  let lastOrdinal = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  function processChunk() {
-    if (version !== renderVersion || isInteracting) return;
+    const worldLeft = screenToWorld(0);
+    const worldRight = screenToWorld(canvas.width);
 
-    const chunkSize = Math.floor(totalSteps / 25);
+    const start = Decimal.max(new Decimal(0), worldLeft);
+    const end = worldRight;
 
-    for (let i = 0; i < chunkSize && step <= totalSteps; i++, step++) {
-      const ratio = new Decimal(step).div(totalSteps);
-      const x = start.plus(end.minus(start).mul(ratio));
-      const ord = getordinal(x);
+    if (end.lte(start)) return;
 
-      if (JSON.stringify(ord) === JSON.stringify(lastOrdinal)) continue;
+    const totalSteps = Math.floor(canvas.width * 2);
 
-      const sx = worldToScreen(x);
-      if (sx > -50 && sx < canvas.width + 50) {
-        drawOrdinalTick(ord, sx);
-      }
+    let step = 0;
+    let lastOrdinal = null;
 
-      lastOrdinal = ord;
+    function processChunk() {
+
+        if (currentVersion !== renderVersion) return;
+        if (isInteracting) return;
+
+        const chunkSize = Math.floor(totalSteps / 25);
+
+        for (let i = 0; i < chunkSize && step <= totalSteps; i++, step++) {
+
+            const ratio = new Decimal(step).div(totalSteps);
+
+            const x = start.plus(
+                end.minus(start).mul(ratio)
+            );
+
+            const ordinal = getordinal(x);
+
+            if (!(JSON.stringify(ordinal) === JSON.stringify(lastOrdinal))) {
+
+                const sx = worldToScreen(x);
+
+                if (sx > -50 && sx < canvas.width + 50) {
+                    drawOrdinalTick(ordinal, sx, zoom);
+                }
+
+                lastOrdinal = ordinal;
+            }
+        }
+
+        if (step <= totalSteps) {
+            requestAnimationFrame(processChunk);
+        } else {
+            // rendering finished
+            renderTime = (performance.now() - renderStart) / 1000;
+        }
     }
 
-    if (step <= totalSteps) {
-      requestAnimationFrame(processChunk);
-    }
-  }
-
-  processChunk();
+    processChunk();
 }
 
 
@@ -354,6 +374,7 @@ function autoPrecision() {
 // MAIN LOOP
 // =====================
 let fps = 0, frames = 0, lastTime = performance.now();
+let renderTime = 0;
 
 function loop() {
   autoPrecision();
@@ -369,7 +390,8 @@ function loop() {
 
   // UI updates
   document.getElementById("zoomDisplay").textContent = zoom.toPrecision(6);
-  document.getElementById("fpsDisplay").textContent = fps;
+    document.getElementById("fpsDisplay").textContent =
+    fps + " (Rendered in : " + renderTime.toFixed(5) + "s)";
 
   const center = screenToWorld(canvas.width / 2);
 
