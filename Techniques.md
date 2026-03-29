@@ -28,7 +28,7 @@ While these methods work, they often:
 
 Instead of writing ordinals symbolically, we represent them as a **sequence of integers**:
 
-[a_0, a_1, a_2, a_3, ...]
+[a0, a1, a2, a3, ...]
 
 This sequence describes a **path of successive fundamental sequence expansions** starting from a fixed ordinal.
 
@@ -52,15 +52,15 @@ Reference: https://en.wikipedia.org/wiki/Fundamental_sequence_(set_theory)
 
 Given:
 - a fixed ordinal α
-- a sequence [a_0, a_1, a_2, ...]
+- a sequence [a0, a1, a2, ...]
 
 We define:
 
-α[a_0][a_1][a_2]...
+α[a0][a1][a2]...
 
 as shorthand for:
 
-FS(FS(FS(α)[a_0])[a_1])[a_2]...
+FS(FS(FS(α)[a0])[a1])[a2]...
 
 ---
 
@@ -119,7 +119,7 @@ Two approaches are currently implemented:
 
 ### 1. Log-based Encoding
 
-a_n = floor(log_{2/3}(1 - x)) (iterative)
+an = floor(log_{2/3}(1 - x)) (iterative)
 
 - Produces **self-similar / fractal structure**
 - Computationally expensive
@@ -128,7 +128,7 @@ a_n = floor(log_{2/3}(1 - x)) (iterative)
 
 ### 2. Rational Encoding
 
-a_n = floor(x / (1 - x)) (iterative)
+an = floor(x / (1 - x)) (iterative)
 
 - Very fast
 - Breaks self-similarity
