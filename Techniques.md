@@ -6,6 +6,8 @@ all of them work samelessly, but it not the most optimized way
 
 So i'll introducing a new techniques : Fundamental Sequence Ordinal Encoding
 
+Fundamental Sequence : https://en.wikipedia.org/wiki/Fundamental_sequence_(set_theory)
+
 it currently have a problem, like with e0 is fixed ordinal,there multiples encoding for w like [1],[2,1],[3,1,1],[4,1,1,1],...
 
 ## Sounds cool...where we get ordinal heuristic position?
